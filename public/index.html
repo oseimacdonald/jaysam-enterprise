@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jaysam Enterprise - Timber Merchant</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h2>Jaysam Enterprise</h2>
+                <span>Timber Merchant</span>
+            </div>
+            <div class="nav-links" id="navLinks">
+                <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+                <a href="#" onclick="showSection('products')">Products</a>
+                <a href="#" onclick="showSection('orders')">Orders</a>
+                <a href="#" onclick="showSection('customers')">Customers</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </nav>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="section active">
+            <div class="login-container">
+                <h2>Jaysam Enterprise</h2>
+                <p class="subtitle">Timber Merchant Management System</p>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <input type="text" id="username" placeholder="Username or Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+                <div id="loginMessage" class="message"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section">
+            <div class="container">
+                <h2>Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Products</h3>
+                        <p id="totalProducts">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Orders</h3>
+                        <p id="activeOrders">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Customers</h3>
+                        <p id="totalCustomers">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Stock Value</h3>
+                        <p id="stockValue">$0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <div id="products" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Timber Products</h2>
+                    <button class="btn btn-primary" onclick="showProductForm()">Add Product</button>
+                </div>
+                
+                <!-- Product Filters -->
+                <div class="filters">
+                    <input type="text" id="productSearch" placeholder="Search products..." onkeyup="loadProducts()">
+                    <select id="timberTypeFilter" onchange="loadProducts()">
+                        <option value="">All Timber Types</option>
+                    </select>
+                    <select id="gradeFilter" onchange="loadProducts()">
+                        <option value="">All Grades</option>
+                    </select>
+                </div>
+
+                <!-- Products Table -->
+                <div class="table-container">
+                    <table id="productsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Timber Type</th>
+                                <th>Grade</th>
+                                <th>Dimensions</th>
+                                <th>Price/Unit</th>
+                                <th>Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="productsPagination"></div>
+            </div>
+        </div>
+
+        <!-- Product Form Modal -->
+        <div id="productModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeProductForm()">&times;</span>
+                <h3 id="productModalTitle">Add New Product</h3>
+                <form id="productForm">
+                    <input type="hidden" id="productId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Product Name</label>
+                            <input type="text" id="productName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Timber Type</label>
+                            <input type="text" id="timberType" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Grade</label>
+                            <input type="text" id="grade" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Dimensions</label>
+                            <input type="text" id="dimensions" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Length (m)</label>
+                            <input type="number" step="0.01" id="length" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Width (m)</label>
+                            <input type="number" step="0.01" id="width" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Thickness (m)</label>
+                            <input type="number" step="0.01" id="thickness" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Price per Unit</label>
+                            <input type="number" step="0.01" id="pricePerUnit" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Unit</label>
+                            <select id="unit">
+                                <option value="cubic_meter">Cubic Meter</option>
+                                <option value="piece">Piece</option>
+                                <option value="board_feet">Board Feet</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Quantity in Stock</label>
+                            <input type="number" step="0.01" id="quantityInStock" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="productDescription" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input type="url" id="imageUrl">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeProductForm()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
