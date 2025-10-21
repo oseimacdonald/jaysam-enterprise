@@ -1,0 +1,24 @@
+<div class="login-container">
+    <h2>Login to Jaysam Enterprise</h2>
+    
+    <form method="post" action="/account/login" class="login-form">
+        <div class="form-group">
+            <label for="account_email">Email:</label>
+            <input type="email" id="account_email" name="account_email" value="<%= account_email %>" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="account_password">Password:</label>
+            <input type="password" id="account_password" name="account_password" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    
+    <div class="demo-credentials">
+        <h4>Demo Credentials:</h4>
+        <p><strong>Admin:</strong> admin@jaysamenterprise.com / admin123</p>
+        <p><strong>Employee:</strong> employee@jaysamenterprise.com / admin123</p>
+        <p><strong>Client:</strong> client@finefurniture.com / admin123</p>
+    </div>
+</div>

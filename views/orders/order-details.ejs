@@ -1,0 +1,104 @@
+<%- include('../partials/head') %>
+<body>
+    <%- include('../partials/header') %>
+    <%- include('../partials/navigation') %>
+    
+    <main class="order-details-main">
+        <h1>Order Details - #<%= order.order_id %></h1>
+        
+        <%- include('../partials/flash-messages') %>
+        
+        <div class="order-info">
+            <div class="order-header">
+                <div class="order-meta">
+                    <p><strong>Order Date:</strong> <%= new Date(order.order_date).toLocaleDateString() %></p>
+                    <p><strong>Status:</strong> 
+                        <span class="status status-<%= order.order_status.toLowerCase() %>">
+                            <%= order.order_status %>
+                        </span>
+                    </p>
+                    <p><strong>Total Amount:</strong> $<%= order.total_amount %></p>
+                </div>
+                
+                <div class="shipping-info">
+                    <h3>Shipping Address</h3>
+                    <p><%= order.shipping_address %></p>
+                    <p><%= order.shipping_city %>, <%= order.shipping_state %> <%= order.shipping_zip %></p>
+                    <% if (order.shipping_phone) { %>
+                        <p><strong>Phone:</strong> <%= order.shipping_phone %></p>
+                    <% } %>
+                </div>
+            </div>
+            
+            <div class="order-items">
+                <h3>Order Items</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% items.forEach(item => { %>
+                            <tr class="order-item">
+                                <td class="product-info">
+                                    <h4><%= item.inv_name %></h4>
+                                    <p class="product-specs">
+                                        <%= item.inv_species %> - <%= item.inv_grade %>
+                                    </p>
+                                    <p class="product-desc"><%= item.inv_description %></p>
+                                </td>
+                                <td class="price">$<%= item.unit_price %></td>
+                                <td class="quantity"><%= item.quantity %></td>
+                                <td class="line-total">$<%= item.line_total %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                            <td class="total-amount">$<%= order.total_amount %></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            
+            <div class="order-actions">
+                <a href="/orders" class="btn-back">← Back to Orders</a>
+                <% if (order.order_status === 'Pending') { %>
+                    <button class="btn-cancel" 
+                            data-order-id="<%= order.order_id %>"
+                            title="Cancel Order">Cancel Order</button>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <%- include('../partials/footer') %>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('.btn-cancel')?.addEventListener('click', function() {
+                const orderId = this.dataset.orderId;
+                
+                if (confirm('Are you sure you want to cancel this order?')) {
+                    fetch(`/orders/${orderId}/cancel`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert(data.message);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

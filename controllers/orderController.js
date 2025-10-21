@@ -1,53 +1,130 @@
-const db = require('../config/database');
+const orderModel = require("../models/order-model")
+const utilities = require("../middleware/utilities")
 
-const orderController = {
-    getAllOrders: async (req, res) => {
-        try {
-            const result = await db.query(`
-                SELECT o.*, c.company_name, c.contact_person 
-                FROM orders o 
-                LEFT JOIN customers c ON o.customer_id = c.id 
-                ORDER BY o.created_at DESC
-                LIMIT 50
-            `);
-            res.json({ orders: result.rows });
-        } catch (error) {
-            console.error('Get orders error:', error);
-            res.status(500).json({ error: 'Server error' });
-        }
-    },
+const orderController = {}
 
-    createOrder: async (req, res) => {
-        try {
-            const { customer_id, order_date, delivery_date, notes, items } = req.body;
-            
-            // Generate order number
-            const orderNumber = 'ORD-' + Date.now();
-            
-            // Calculate total amount
-            const total_amount = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-            
-            const orderResult = await db.query(
-                `INSERT INTO orders (order_number, customer_id, order_date, delivery_date, notes, total_amount, created_by) 
-                 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-                [orderNumber, customer_id, order_date, delivery_date, notes, total_amount, req.user.id]
-            );
-
-            // Insert order items
-            for (const item of items) {
-                await db.query(
-                    `INSERT INTO order_items (order_id, product_id, quantity, unit_price, total_price) 
-                     VALUES ($1, $2, $3, $4, $5)`,
-                    [orderResult.rows[0].id, item.product_id, item.quantity, item.unit_price, item.quantity * item.unit_price]
-                );
-            }
-
-            res.status(201).json({ order: orderResult.rows[0] });
-        } catch (error) {
-            console.error('Create order error:', error);
-            res.status(500).json({ error: 'Server error' });
-        }
+/* ***************************
+ * Get orders for current user
+ * ************************** */
+orderController.getOrders = async function (req, res, next) {
+  try {
+    let nav = await utilities.getNav()
+    const user_id = req.session.user?.user_id // Changed from account_id
+    const isAdmin = req.session.user?.user_role === 'Admin' // Changed from account_type
+    
+    if (!user_id) {
+      req.flash('notice', 'Please log in to view orders')
+      return res.redirect('/account/login')
     }
-};
 
-module.exports = orderController;
+    const orders = await orderModel.getOrdersByUserId(user_id, isAdmin) // Changed function name
+    
+    res.render("./orders/orders", {
+      title: isAdmin ? "All Orders" : "My Orders",
+      nav,
+      orders,
+      messages: req.flash()
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+/* ***************************
+ * Get order details
+ * ************************** */
+orderController.getOrderDetails = async function (req, res, next) {
+  try {
+    let nav = await utilities.getNav()
+    const order_id = req.params.id
+    const user_id = req.session.user?.user_id // Changed from account_id
+    const isAdmin = req.session.user?.user_role === 'Admin' // Changed from account_type
+
+    if (!user_id) {
+      req.flash('notice', 'Please log in to view order details')
+      return res.redirect('/account/login')
+    }
+
+    const orderDetails = await orderModel.getOrderById(order_id, user_id, isAdmin) // Changed params
+    
+    if (!orderDetails) {
+      req.flash('notice', 'Order not found')
+      return res.redirect('/orders')
+    }
+
+    res.render("./orders/order-details", {
+      title: "Order Details",
+      nav,
+      order: orderDetails.order,
+      items: orderDetails.items,
+      messages: req.flash()
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+/* ***************************
+ * Create new order from cart
+ * ************************** */
+orderController.createOrder = async function (req, res, next) {
+  try {
+    const { shipping_address, shipping_city, shipping_state, shipping_zip, shipping_phone, customer_notes } = req.body
+    const user_id = req.session.user?.user_id // Changed from account_id
+
+    if (!user_id) {
+      req.flash('notice', 'Please log in to place an order')
+      return res.redirect('/account/login')
+    }
+
+    const orderData = {
+      user_id, // Changed from account_id
+      shipping_address,
+      shipping_city,
+      shipping_state,
+      shipping_zip,
+      shipping_phone,
+      customer_notes
+    }
+
+    const result = await orderModel.createOrderFromCart(orderData)
+    
+    if (result.success) {
+      req.flash('success', `Order placed successfully! Order #${result.order_id}`)
+      res.redirect(`/orders/${result.order_id}`)
+    } else {
+      req.flash('notice', result.message || 'Failed to place order')
+      res.redirect('/cart')
+    }
+  } catch (error) {
+    next(error)
+  }
+}
+
+/* ***************************
+ * Cancel order
+ * ************************** */
+orderController.cancelOrder = async function (req, res, next) {
+  try {
+    const order_id = req.params.id
+    const user_id = req.session.user?.user_id // Changed from account_id
+    const isAdmin = req.session.user?.user_role === 'Admin' // Changed from account_type
+
+    if (!user_id) {
+      return res.status(401).json({ success: false, message: 'Not logged in' })
+    }
+
+    const result = await orderModel.cancelOrder(order_id, user_id, isAdmin) // Changed params
+    
+    if (result.success) {
+      req.flash('success', 'Order cancelled successfully')
+      res.json({ success: true, message: 'Order cancelled' })
+    } else {
+      res.json({ success: false, message: result.message })
+    }
+  } catch (error) {
+    res.json({ success: false, message: error.message })
+  }
+}
+
+module.exports = orderController

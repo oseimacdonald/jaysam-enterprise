@@ -1,0 +1,93 @@
+<%- include('../partials/head') %>
+<body>
+    <%- include('../partials/header') %>
+    <%- include('../partials/navigation') %>
+    
+    <main class="orders-main">
+        <h1><%= title %></h1>
+        
+        <%- include('../partials/flash-messages') %>
+        
+        <% if (typeof orders !== 'undefined' && orders.length > 0) { %>
+            <div class="orders-list">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                            <th>Shipping To</th>
+                            <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+                                <th>Customer</th>
+                            <% } %>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% orders.forEach(order => { %>
+                            <tr class="order-item">
+                                <td>#<%= order.order_id %></td>
+                                <td><%= new Date(order.order_date).toLocaleDateString() %></td>
+                                <td>
+                                    <span class="status status-<%= order.order_status.toLowerCase() %>">
+                                        <%= order.order_status %>
+                                    </span>
+                                </td>
+                                <td class="price">$<%= order.total_amount %></td>
+                                <td><%= order.shipping_city %>, <%= order.shipping_state %></td>
+                                <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+                                    <td>
+                                        <%= order.account_firstname %> <%= order.account_lastname %>
+                                        <br><small><%= order.account_email %></small>
+                                    </td>
+                                <% } %>
+                                <td class="actions">
+                                    <a href="/orders/<%= order.order_id %>" class="btn-view">View Details</a>
+                                    <% if (order.order_status === 'Pending') { %>
+                                        <button class="btn-cancel" 
+                                                data-order-id="<%= order.order_id %>"
+                                                title="Cancel Order">Cancel</button>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="empty-orders">
+                <p>No orders found</p>
+                <a href="/products" class="btn-continue">Browse Products</a>
+            </div>
+        <% } %>
+    </main>
+
+    <%- include('../partials/footer') %>
+    
+    <script>
+        // Order cancellation
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.btn-cancel').forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.dataset.orderId;
+                    
+                    if (confirm('Are you sure you want to cancel this order?')) {
+                        fetch(`/orders/${orderId}/cancel`, {
+                            method: 'POST'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            } else {
+                                alert(data.message);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

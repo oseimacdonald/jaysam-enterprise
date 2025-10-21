@@ -1,0 +1,102 @@
+<%- include('../partials/head', { title: 'Customer Management' }) %>
+
+<div class="container">
+    <h1>Customer Management</h1>
+    
+    <!-- Add Customer Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Add New Customer</h2>
+        </div>
+        <div class="card-body">
+            <form action="/customers" method="POST">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="company_name">Company Name *</label>
+                        <input type="text" class="form-control" id="company_name" name="company_name" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="contact_person">Contact Person *</label>
+                        <input type="text" class="form-control" id="contact_person" name="contact_person" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="phone">Phone</label>
+                        <input type="text" class="form-control" id="phone" name="phone">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="tax_number">Tax Number</label>
+                        <input type="text" class="form-control" id="tax_number" name="tax_number">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="payment_terms">Payment Terms</label>
+                        <input type="text" class="form-control" id="payment_terms" name="payment_terms" placeholder="e.g., Net 30">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="credit_limit">Credit Limit ($)</label>
+                        <input type="number" class="form-control" id="credit_limit" name="credit_limit" step="0.01" min="0">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Add Customer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Customers List -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Existing Customers</h2>
+        </div>
+        <div class="card-body">
+            <% if (customers && customers.length > 0) { %>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Company Name</th>
+                                <th>Contact Person</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Credit Limit</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% customers.forEach(customer => { %>
+                                <tr>
+                                    <td><%= customer.company_name %></td>
+                                    <td><%= customer.contact_person %></td>
+                                    <td><%= customer.email %></td>
+                                    <td><%= customer.phone %></td>
+                                    <td>$<%= customer.credit_limit ? parseFloat(customer.credit_limit).toFixed(2) : '0.00' %></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-secondary">View</button>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } else { %>
+                <p class="text-muted">No customers found.</p>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,147 @@
+<%- include('../partials/head') %>
+<body>
+    <%- include('../partials/header') %>
+    <%- include('../partials/navigation') %>
+    
+    <main class="cart-main">
+        <h1>Shopping Cart</h1>
+        
+        <%- include('../partials/flash-messages') %>
+        
+        <% if (typeof cartItems !== 'undefined' && cartItems.length > 0) { %>
+            <div class="cart-items">
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% cartItems.forEach(item => { %>
+                            <tr class="cart-item" data-cart-id="<%= item.cart_id %>">
+                                <td class="product-info">
+                                    <img src="<%= item.inv_thumbnail %>" alt="<%= item.inv_name %>" class="product-thumb">
+                                    <div class="product-details">
+                                        <h3><%= item.inv_name %></h3>
+                                        <p class="product-specs">
+                                            <%= item.inv_species %> - <%= item.inv_grade %> |
+                                            <%= item.inv_thickness %>x<%= item.inv_width %>x<%= item.inv_length %>mm
+                                        </p>
+                                    </div>
+                                </td>
+                                <td class="price">$<%= item.inv_price %></td>
+                                <td class="quantity">
+                                    <input type="number" 
+                                           value="<%= item.quantity %>" 
+                                           min="1" 
+                                           class="quantity-input"
+                                           data-cart-id="<%= item.cart_id %>">
+                                </td>
+                                <td class="line-total">$<%= item.line_total %></td>
+                                <td class="actions">
+                                    <button class="btn-remove" 
+                                            data-cart-id="<%= item.cart_id %>"
+                                            title="Remove from cart">×</button>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+                
+                <div class="cart-actions">
+                    <div class="cart-total">
+                        <strong>Total: $<%= cartItems.reduce((sum, item) => sum + parseFloat(item.line_total), 0) %></strong>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn-clear" id="clearCart">Clear Cart</button>
+                        <a href="/products" class="btn-continue">Continue Shopping</a>
+                        <a href="/orders/checkout" class="btn-checkout">Proceed to Checkout</a>
+                    </div>
+                </div>
+            </div>
+        <% } else { %>
+            <div class="empty-cart">
+                <p>Your cart is empty</p>
+                <a href="/products" class="btn-continue">Browse Products</a>
+            </div>
+        <% } %>
+    </main>
+
+    <%- include('../partials/footer') %>
+    
+    <script>
+        // Cart functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update quantity
+            document.querySelectorAll('.quantity-input').forEach(input => {
+                input.addEventListener('change', function() {
+                    const cartId = this.dataset.cartId;
+                    const quantity = this.value;
+                    
+                    fetch('/cart/update', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            cart_id: cartId,
+                            quantity: quantity
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert(data.message);
+                        }
+                    });
+                });
+            });
+            
+            // Remove item
+            document.querySelectorAll('.btn-remove').forEach(button => {
+                button.addEventListener('click', function() {
+                    const cartId = this.dataset.cartId;
+                    
+                    if (confirm('Remove this item from cart?')) {
+                        fetch('/cart/remove', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                cart_id: cartId
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            } else {
+                                alert(data.message);
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Clear cart
+            document.getElementById('clearCart')?.addEventListener('click', function() {
+                if (confirm('Clear entire cart?')) {
+                    fetch('/cart/clear', {
+                        method: 'POST'
+                    })
+                    .then(() => {
+                        location.reload();
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

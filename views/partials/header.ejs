@@ -1,0 +1,16 @@
+<header>
+    <div class="container">
+        <div class="header-content">
+            <a href="/" class="logo">
+                Jaysam <span>Enterprise</span>
+            </a>
+            
+            <!-- User Info for logged-in users -->
+            <% if (isLoggedIn && user) { %>
+                <div class="user-info">
+                    <span>Welcome, <strong><%= user.username %></strong> (<%= user.account_type %>)</span>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</header>

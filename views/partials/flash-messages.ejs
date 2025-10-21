@@ -1,0 +1,25 @@
+<!-- You already have this, but here's a slightly improved version -->
+<% if (typeof messages !== 'undefined') { %>
+    <div class="flash-messages">
+        <% if (messages.notice && messages.notice.length > 0) { %>
+            <div class="flash-message notice">
+                <%= Array.isArray(messages.notice) ? messages.notice.join(', ') : messages.notice %>
+            </div>
+        <% } %>
+        <% if (messages.success && messages.success.length > 0) { %>
+            <div class="flash-message success">
+                <%= Array.isArray(messages.success) ? messages.success.join(', ') : messages.success %>
+            </div>
+        <% } %>
+        <% if (messages.error && messages.error.length > 0) { %>
+            <div class="flash-message error">
+                <%= Array.isArray(messages.error) ? messages.error.join(', ') : messages.error %>
+            </div>
+        <% } %>
+        <% if (messages.warning && messages.warning.length > 0) { %>
+            <div class="flash-message warning">
+                <%= Array.isArray(messages.warning) ? messages.warning.join(', ') : messages.warning %>
+            </div>
+        <% } %>
+    </div>
+<% } %>

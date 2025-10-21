@@ -1,0 +1,36 @@
+<nav>
+    <div class="container">
+        <ul>
+            <!-- Home - Always visible -->
+            <li><a href="/" title="Home page">Home</a></li>
+            
+            <!-- Products - Everyone can see -->
+            <li><a href="/products" title="Browse Products">Products</a></li>
+            
+            <!-- Cart - Everyone can see -->
+            <li><a href="/cart" title="Shopping Cart">Cart</a></li>
+            
+            <!-- Orders - Only logged-in employees+ can see -->
+            <% if (isEmployee) { %>
+                <li><a href="/orders" title="My Orders">Orders</a></li>
+            <% } %>
+            
+            <!-- Customers - Only managers+ can see -->
+            <% if (isManager) { %>
+                <li><a href="/customers" title="Customer Management">Customers</a></li>
+            <% } %>
+            
+            <!-- Account Management - Only admins can see -->
+            <% if (isAdmin) { %>
+                <li><a href="/account/" title="Account Management">Accounts</a></li>
+            <% } %>
+            
+            <!-- Login/Logout -->
+            <% if (isLoggedIn) { %>
+                <li><a href="/account/logout" title="Logout">Logout</a></li>
+            <% } else { %>
+                <li><a href="/account/login" title="Login">Login</a></li>
+            <% } %>
+        </ul>
+    </div>
+</nav>
