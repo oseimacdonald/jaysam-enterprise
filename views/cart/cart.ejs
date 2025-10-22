@@ -1,147 +1,274 @@
-<%- include('../partials/head') %>
-<body>
-    <%- include('../partials/header') %>
-    <%- include('../partials/navigation') %>
+<%- include('../partials/head', { title: 'Shopping Cart - Jaysam Enterprise' }) %>
+
+<div class="container">
+    <div class="page-header text-center mb-4">
+        <h1 class="text-primary">Shopping Cart</h1>
+        <p class="lead">Review your selected timber products</p>
+    </div>
+
+    <%- include('../partials/flash-messages') %>
     
-    <main class="cart-main">
-        <h1>Shopping Cart</h1>
-        
-        <%- include('../partials/flash-messages') %>
-        
-        <% if (typeof cartItems !== 'undefined' && cartItems.length > 0) { %>
-            <div class="cart-items">
-                <table class="cart-table">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Total</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% cartItems.forEach(item => { %>
-                            <tr class="cart-item" data-cart-id="<%= item.cart_id %>">
-                                <td class="product-info">
-                                    <img src="<%= item.inv_thumbnail %>" alt="<%= item.inv_name %>" class="product-thumb">
-                                    <div class="product-details">
-                                        <h3><%= item.inv_name %></h3>
-                                        <p class="product-specs">
-                                            <%= item.inv_species %> - <%= item.inv_grade %> |
-                                            <%= item.inv_thickness %>x<%= item.inv_width %>x<%= item.inv_length %>mm
-                                        </p>
-                                    </div>
-                                </td>
-                                <td class="price">$<%= item.inv_price %></td>
-                                <td class="quantity">
-                                    <input type="number" 
-                                           value="<%= item.quantity %>" 
-                                           min="1" 
-                                           class="quantity-input"
-                                           data-cart-id="<%= item.cart_id %>">
-                                </td>
-                                <td class="line-total">$<%= item.line_total %></td>
-                                <td class="actions">
-                                    <button class="btn-remove" 
-                                            data-cart-id="<%= item.cart_id %>"
-                                            title="Remove from cart">×</button>
-                                </td>
+    <% if (typeof cartItems !== 'undefined' && cartItems.length > 0) { %>
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    Your Cart (<%= itemCount %> <%= itemCount === 1 ? 'item' : 'items' %>)
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 cart-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="40%">Product Details</th>
+                                <th width="15%">Unit Price</th>
+                                <th width="15%">Quantity</th>
+                                <th width="15%">Total</th>
+                                <th width="15%">Actions</th>
                             </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
-                
-                <div class="cart-actions">
-                    <div class="cart-total">
-                        <strong>Total: $<%= cartItems.reduce((sum, item) => sum + parseFloat(item.line_total), 0) %></strong>
+                        </thead>
+                        <tbody>
+                            <% cartItems.forEach(item => { %>
+                                <tr class="cart-item" data-cart-id="<%= item.cart_id %>">
+                                    <td class="product-info">
+                                        <div class="d-flex align-items-start">
+                                            <% if (item.product_image) { %>
+                                                <img src="<%= item.product_image %>" 
+                                                     alt="<%= item.product_name %>" 
+                                                     class="product-thumb me-3 rounded"
+                                                     style="width: 80px; height: 80px; object-fit: cover;">
+                                            <% } else { %>
+                                                <div class="product-thumb-placeholder me-3 d-flex align-items-center justify-content-center rounded bg-light"
+                                                     style="width: 80px; height: 80px;">
+                                                    <i class="fas fa-tree fa-2x text-muted"></i>
+                                                </div>
+                                            <% } %>
+                                            <div class="product-details flex-grow-1">
+                                                <h6 class="mb-1 product-name"><%= item.timber_type %> - <%= item.product_name %></h6>
+                                                <div class="product-specs small text-muted mb-1">
+                                                    <span class="badge bg-primary me-1"><%= item.product_grade %></span>
+                                                    <span class="badge bg-secondary me-1"><%= item.product_category %></span>
+                                                </div>
+                                                <div class="size-details small">
+                                                    <strong>Dimensions:</strong> <%= item.dimensions %>
+                                                </div>
+                                                <div class="size-measurements small text-muted">
+                                                    <%= item.thickness %>" × <%= item.width %>" × <%= item.length %>'
+                                                </div>
+                                                <% if (item.product_description) { %>
+                                                    <p class="small text-muted mt-1 mb-0"><%= item.product_description %></p>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="unit-price align-middle">
+                                        <strong class="text-success">₵<%= parseFloat(item.price_per_unit).toFixed(2) %></strong>
+                                        <div class="small text-muted">per <%= item.unit || 'piece' %></div>
+                                    </td>
+                                    <td class="quantity align-middle">
+                                        <div class="input-group input-group-sm" style="max-width: 120px;">
+                                            <button class="btn btn-outline-secondary quantity-decrease" type="button">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input type="number" 
+                                                   value="<%= item.quantity %>" 
+                                                   min="1" 
+                                                   max="<%= item.quantity_in_stock %>"
+                                                   class="form-control text-center quantity-input"
+                                                   data-cart-id="<%= item.cart_id %>">
+                                            <button class="btn btn-outline-secondary quantity-increase" type="button">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        <div class="small text-muted mt-1">
+                                            Stock: <%= item.quantity_in_stock %>
+                                        </div>
+                                    </td>
+                                    <td class="line-total align-middle">
+                                        <strong class="text-primary">₵<%= parseFloat(item.line_total).toFixed(2) %></strong>
+                                    </td>
+                                    <td class="actions align-middle">
+                                        <button class="btn btn-outline-danger btn-sm btn-remove" 
+                                                data-cart-id="<%= item.cart_id %>"
+                                                title="Remove from cart">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="cart-summary">
+                            <h5 class="mb-2">Cart Summary</h5>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Items:</span>
+                                <strong><%= itemCount %></strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Subtotal:</span>
+                                <strong>₵<%= cartTotal %></strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Delivery:</span>
+                                <strong class="text-success">Calculated at checkout</strong>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between total-amount">
+                                <span><strong>Total Amount:</strong></span>
+                                <strong class="text-success fs-5">₵<%= cartTotal %></strong>
+                            </div>
+                        </div>
                     </div>
-                    <div class="action-buttons">
-                        <button class="btn-clear" id="clearCart">Clear Cart</button>
-                        <a href="/products" class="btn-continue">Continue Shopping</a>
-                        <a href="/orders/checkout" class="btn-checkout">Proceed to Checkout</a>
+                    <div class="col-md-6 text-end">
+                        <div class="action-buttons">
+                            <button class="btn btn-outline-secondary me-2" id="clearCart">
+                                <i class="fas fa-trash me-1"></i>Clear Cart
+                            </button>
+                            <a href="/products" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-arrow-left me-1"></i>Continue Shopping
+                            </a>
+                            <a href="/orders/checkout" class="btn btn-success">
+                                <i class="fas fa-lock me-1"></i>Proceed to Checkout
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-        <% } else { %>
-            <div class="empty-cart">
-                <p>Your cart is empty</p>
-                <a href="/products" class="btn-continue">Browse Products</a>
-            </div>
-        <% } %>
-    </main>
+        </div>
+    <% } else { %>
+        <div class="empty-cart text-center py-5">
+            <div class="empty-icon mb-4" style="font-size: 4rem;">🛒</div>
+            <h4 class="text-muted mb-3">Your cart is empty</h4>
+            <p class="text-muted mb-4">Browse our timber products and add items to your cart</p>
+            <a href="/products" class="btn btn-primary btn-lg">
+                <i class="fas fa-tree me-2"></i>Browse Products
+            </a>
+        </div>
+    <% } %>
+</div>
 
-    <%- include('../partials/footer') %>
-    
-    <script>
-        // Cart functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            // Update quantity
-            document.querySelectorAll('.quantity-input').forEach(input => {
-                input.addEventListener('change', function() {
-                    const cartId = this.dataset.cartId;
-                    const quantity = this.value;
-                    
-                    fetch('/cart/update', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            cart_id: cartId,
-                            quantity: quantity
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            location.reload();
-                        } else {
-                            alert(data.message);
-                        }
-                    });
-                });
-            });
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update quantity with decrease/increase buttons
+    document.querySelectorAll('.quantity-decrease, .quantity-increase').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.closest('.input-group').querySelector('.quantity-input');
+            const currentValue = parseInt(input.value) || 1;
             
-            // Remove item
-            document.querySelectorAll('.btn-remove').forEach(button => {
-                button.addEventListener('click', function() {
-                    const cartId = this.dataset.cartId;
-                    
-                    if (confirm('Remove this item from cart?')) {
-                        fetch('/cart/remove', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                cart_id: cartId
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                location.reload();
-                            } else {
-                                alert(data.message);
-                            }
-                        });
-                    }
-                });
-            });
+            if (this.classList.contains('quantity-decrease')) {
+                input.value = Math.max(1, currentValue - 1);
+            } else {
+                input.value = currentValue + 1;
+            }
             
-            // Clear cart
-            document.getElementById('clearCart')?.addEventListener('click', function() {
-                if (confirm('Clear entire cart?')) {
-                    fetch('/cart/clear', {
-                        method: 'POST'
-                    })
-                    .then(() => {
-                        location.reload();
-                    });
-                }
-            });
+            updateCartItem(input);
         });
-    </script>
-</body>
-</html>
+    });
+    
+    // Update quantity on input change
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('change', function() {
+            updateCartItem(this);
+        });
+    });
+    
+    // Remove item from cart
+    document.querySelectorAll('.btn-remove').forEach(button => {
+        button.addEventListener('click', function() {
+            const cartId = this.dataset.cartId;
+            const productName = this.closest('.cart-item').querySelector('.product-name').textContent;
+            
+            if (confirm(`Remove "${productName}" from cart?`)) {
+                removeFromCart(cartId);
+            }
+        });
+    });
+    
+    // Clear entire cart
+    document.getElementById('clearCart')?.addEventListener('click', function() {
+        if (confirm('Clear entire cart? This action cannot be undone.')) {
+            clearCart();
+        }
+    });
+    
+    // Cart functions
+    async function updateCartItem(input) {
+        const cartId = input.dataset.cartId;
+        const quantity = parseInt(input.value) || 1;
+        
+        try {
+            const response = await fetch('/cart/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    cart_id: cartId,
+                    quantity: quantity
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                location.reload(); // Reload to show updated totals
+            } else {
+                alert(data.message);
+                location.reload(); // Reload to reset to correct values
+            }
+        } catch (error) {
+            console.error('Error updating cart:', error);
+            alert('Error updating cart. Please try again.');
+            location.reload();
+        }
+    }
+    
+    async function removeFromCart(cartId) {
+        try {
+            const response = await fetch('/cart/remove', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    cart_id: cartId
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error removing item:', error);
+            alert('Error removing item. Please try again.');
+        }
+    }
+    
+    async function clearCart() {
+        try {
+            const response = await fetch('/cart/clear', {
+                method: 'POST'
+            });
+            
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error clearing cart. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error clearing cart:', error);
+            alert('Error clearing cart. Please try again.');
+        }
+    }
+});
+</script>

@@ -1,0 +1,137 @@
+/* ===== NAVIGATION STYLES ===== */
+nav {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    padding: 1rem 0;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+nav .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+}
+
+nav li {
+    margin: 0;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    display: block;
+    text-align: center;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+nav a:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* Active link styling */
+nav a[href="/"] {
+    background-color: var(--accent-color);
+}
+
+nav a[href="/"]:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Role-based link styling for visual hierarchy */
+nav a[href="/orders"] {
+    border-left: 3px solid var(--accent-color);
+}
+
+nav a[href="/customers"] {
+    border-left: 3px solid var(--warning-color);
+}
+
+nav a[href="/account/"] {
+    border-left: 3px solid var(--error-color);
+}
+
+/* Login/Logout specific styling */
+nav a[href*="login"],
+nav a[href*="logout"] {
+    background-color: var(--primary-light);
+    font-weight: bold;
+}
+
+nav a[href*="login"]:hover,
+nav a[href*="logout"]:hover {
+    background-color: var(--accent-color);
+}
+
+/* Icon styles - using emojis as fallback */
+nav a::before {
+    margin-right: 0.5rem;
+    display: inline-block;
+}
+
+nav a[href="/"]::before { content: "🏠"; }
+nav a[href="/products"]::before { content: "📦"; }
+nav a[href="/cart"]::before { content: "🛒"; }
+nav a[href="/orders"]::before { content: "📋"; }
+nav a[href="/customers"]::before { content: "👥"; }
+nav a[href="/account/"]::before { content: "⚙️"; }
+nav a[href*="login"]::before { content: "🔑"; }
+nav a[href*="logout"]::before { content: "🚪"; }
+
+/* ===== RESPONSIVE NAVIGATION ===== */
+@media (max-width: 768px) {
+    nav ul {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    nav a {
+        padding: 1rem;
+        width: 100%;
+    }
+    
+    /* Remove left borders and add top borders on mobile */
+    nav a[href="/orders"],
+    nav a[href="/customers"],
+    nav a[href="/account/"] {
+        border-left: none;
+        border-top: 3px solid;
+    }
+    
+    nav a[href="/orders"] { border-top-color: var(--accent-color); }
+    nav a[href="/customers"] { border-top-color: var(--warning-color); }
+    nav a[href="/account/"] { border-top-color: var(--error-color); }
+}
+
+@media (max-width: 480px) {
+    nav .container {
+        padding: 0 15px;
+    }
+    
+    nav a {
+        padding: 0.875rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Optional: Reduce icon size on very small screens */
+    nav a::before {
+        font-size: 0.9em;
+    }
+}

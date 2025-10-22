@@ -3,11 +3,21 @@ const router = express.Router()
 const cartController = require("../controllers/cartController")
 const authMiddleware = require("../middleware/authMiddleware")
 
-// Cart routes - public access for browsing, protected for actions
-router.get("/", cartController.getCart) // Public can view cart
-router.post("/add", cartController.addToCart) // Public can add to cart
-router.post("/update", authMiddleware.checkEmployee, cartController.updateCart) // Only employees can update
-router.post("/remove", authMiddleware.checkEmployee, cartController.removeFromCart) // Only employees can remove
-router.post("/clear", authMiddleware.checkEmployee, cartController.clearCart) // Only employees can clear
+// Cart routes
+router.get("/", cartController.getCart)
+router.post("/add", authMiddleware.checkLogin, cartController.addToCart)
+router.post("/update", authMiddleware.checkLogin, cartController.updateCart)
+router.post("/remove", authMiddleware.checkLogin, cartController.removeFromCart)
+router.post("/clear", authMiddleware.checkLogin, cartController.clearCart)
+
+// Special handling for /count - return JSON even when not logged in
+router.get("/count", (req, res, next) => {
+  if (!req.session.user) {
+    // Return 0 count for non-logged-in users (JSON response)
+    return res.json({ count: 0 })
+  }
+  // If logged in, use the normal controller
+  cartController.getCartCount(req, res, next)
+})
 
 module.exports = router

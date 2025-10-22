@@ -9,19 +9,25 @@ const cartController = {}
 cartController.getCart = async function (req, res, next) {
   try {
     let nav = await utilities.getNav()
-    const user_id = req.session.user?.user_id // Changed from account_id
+    const user_id = req.session.user?.user_id
     
     if (!user_id) {
       req.flash('notice', 'Please log in to view your cart')
       return res.redirect('/account/login')
     }
 
-    const cartData = await cartModel.getCartByUserId(user_id) // Changed function name
+    const cartData = await cartModel.getCartByUserId(user_id)
     
+    // Calculate cart totals
+    const cartTotal = cartData.reduce((total, item) => total + parseFloat(item.line_total || 0), 0)
+    const itemCount = cartData.reduce((count, item) => count + parseInt(item.quantity || 0), 0)
+
     res.render("./cart/cart", {
-      title: "Shopping Cart",
+      title: "Shopping Cart - Jaysam Enterprise",
       nav,
       cartItems: cartData,
+      cartTotal: cartTotal.toFixed(2),
+      itemCount: itemCount,
       messages: req.flash()
     })
   } catch (error) {
@@ -30,29 +36,47 @@ cartController.getCart = async function (req, res, next) {
 }
 
 /* ***************************
- * Add item to cart
+ * Add item to cart (with size data)
  * ************************** */
 cartController.addToCart = async function (req, res, next) {
   try {
-    const { product_id, quantity = 1 } = req.body // Changed from inv_id
-    const user_id = req.session.user?.user_id // Changed from account_id
+    const { product_id, quantity = 1 } = req.body
+    const user_id = req.session.user?.user_id
 
     if (!user_id) {
-      req.flash('notice', 'Please log in to add items to cart')
-      return res.redirect('/account/login')
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Please log in to add items to cart' 
+      })
     }
 
-    const result = await cartModel.addToCart(user_id, product_id, parseInt(quantity)) // Changed params
-    
-    if (result) {
-      req.flash('success', 'Item added to cart successfully')
-    } else {
-      req.flash('notice', 'Failed to add item to cart')
+    if (!product_id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Product ID is required' 
+      })
     }
+
+    const result = await cartModel.addToCart(user_id, product_id, parseInt(quantity))
     
-    res.redirect('/cart')
+    if (result.success) {
+      res.json({ 
+        success: true, 
+        message: 'Item added to cart successfully',
+        cartCount: result.cartCount
+      })
+    } else {
+      res.status(400).json({ 
+        success: false, 
+        message: result.message || 'Failed to add item to cart' 
+      })
+    }
   } catch (error) {
-    next(error)
+    console.error('Add to cart error:', error)
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error adding item to cart' 
+    })
   }
 }
 
@@ -62,21 +86,35 @@ cartController.addToCart = async function (req, res, next) {
 cartController.updateCart = async function (req, res, next) {
   try {
     const { cart_id, quantity } = req.body
-    const user_id = req.session.user?.user_id // Changed from account_id
+    const user_id = req.session.user?.user_id
 
     if (!user_id) {
-      return res.status(401).json({ success: false, message: 'Not logged in' })
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Please log in to update cart' 
+      })
     }
 
-    const result = await cartModel.updateCartItem(cart_id, user_id, parseInt(quantity)) // Changed param
+    const result = await cartModel.updateCartItem(cart_id, user_id, parseInt(quantity))
     
-    if (result) {
-      res.json({ success: true, message: 'Cart updated successfully' })
+    if (result.success) {
+      res.json({ 
+        success: true, 
+        message: 'Cart updated successfully',
+        updatedItem: result.updatedItem
+      })
     } else {
-      res.json({ success: false, message: 'Failed to update cart' })
+      res.status(400).json({ 
+        success: false, 
+        message: result.message || 'Failed to update cart' 
+      })
     }
   } catch (error) {
-    res.json({ success: false, message: error.message })
+    console.error('Update cart error:', error)
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error updating cart' 
+    })
   }
 }
 
@@ -86,21 +124,34 @@ cartController.updateCart = async function (req, res, next) {
 cartController.removeFromCart = async function (req, res, next) {
   try {
     const { cart_id } = req.body
-    const user_id = req.session.user?.user_id // Changed from account_id
+    const user_id = req.session.user?.user_id
 
     if (!user_id) {
-      return res.status(401).json({ success: false, message: 'Not logged in' })
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Please log in to manage cart' 
+      })
     }
 
-    const result = await cartModel.removeFromCart(cart_id, user_id) // Changed param
+    const result = await cartModel.removeFromCart(cart_id, user_id)
     
     if (result) {
-      res.json({ success: true, message: 'Item removed from cart' })
+      res.json({ 
+        success: true, 
+        message: 'Item removed from cart' 
+      })
     } else {
-      res.json({ success: false, message: 'Failed to remove item' })
+      res.status(400).json({ 
+        success: false, 
+        message: 'Failed to remove item' 
+      })
     }
   } catch (error) {
-    res.json({ success: false, message: error.message })
+    console.error('Remove from cart error:', error)
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error removing item' 
+    })
   }
 }
 
@@ -109,14 +160,14 @@ cartController.removeFromCart = async function (req, res, next) {
  * ************************** */
 cartController.clearCart = async function (req, res, next) {
   try {
-    const user_id = req.session.user?.user_id // Changed from account_id
+    const user_id = req.session.user?.user_id
 
     if (!user_id) {
       req.flash('notice', 'Please log in to manage your cart')
       return res.redirect('/account/login')
     }
 
-    const result = await cartModel.clearCart(user_id) // Changed param
+    const result = await cartModel.clearCart(user_id)
     
     if (result) {
       req.flash('success', 'Cart cleared successfully')
@@ -127,6 +178,25 @@ cartController.clearCart = async function (req, res, next) {
     res.redirect('/cart')
   } catch (error) {
     next(error)
+  }
+}
+
+/* ***************************
+ * Get cart count for navbar
+ * ************************** */
+cartController.getCartCount = async function (req, res, next) {
+  try {
+    const user_id = req.session.user?.user_id
+    
+    if (!user_id) {
+      return res.json({ count: 0 })
+    }
+
+    const count = await cartModel.getCartCount(user_id)
+    res.json({ count: count })
+  } catch (error) {
+    console.error('Get cart count error:', error)
+    res.json({ count: 0 })
   }
 }
 

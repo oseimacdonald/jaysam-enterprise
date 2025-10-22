@@ -1,593 +1,342 @@
-<%- include('../partials/head', { title: 'Products Management - Jaysam Enterprise' }) %>
+<%- include('../partials/head', { title: 'Timber Products - Jaysam Enterprise' }) %>
 
-<div class="container">
-    <div class="page-header">
-        <h1>Timber Products Management</h1>
-        <p class="lead">Manage your timber inventory and product listings - All prices in Ghana Cedis (₵)</p>
-    </div>
-
-    <%- include('../partials/flash-messages') %>
-
-    <!-- Debug Information - Remove this after fixing -->
-    <div class="alert alert-info d-none" id="debugInfo">
-        <h6>Debug Information:</h6>
-        <div id="debugContent"></div>
-    </div>
-
-    <!-- Search and Filter Section -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Search & Filter</h5>
+<div class="container-fluid px-0">
+    <!-- Image Carousel/Slider Section -->
+    <!-- Image Carousel/Slider Section -->
+    <section class="hero-carousel mb-5">
+        <div id="productCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+            <div class="carousel-indicators">
+                <!-- Indicators will be dynamically added -->
+            </div>
+            <div class="carousel-inner">
+                <!-- Default placeholder - this will be replaced -->
+                <div class="carousel-item active">
+                    <div class="carousel-placeholder d-flex align-items-center justify-content-center bg-primary" style="height: 500px;">
+                        <div class="text-center text-white">
+                            <i class="fas fa-tree fa-5x mb-3"></i>
+                            <h3>Quality Timber Products</h3>
+                            <p>Loading featured products...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Manual navigation controls -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
         </div>
-        <div class="card-body">
-            <form method="GET" action="/products" class="row g-3" id="filterForm">
-                <div class="col-md-4">
-                    <input type="text" name="search" class="form-control" placeholder="Search products..." 
-                           value="<%= typeof search !== 'undefined' ? search : '' %>"
-                           id="search_input">
-                </div>
-                <div class="col-md-3">
-                    <select name="timber_type" id="timber_type_select" class="form-control">
-                        <option value="">All Timber Types</option>
-                        <!-- Dynamic options will be loaded here -->
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select name="grade" id="grade_select" class="form-control">
-                        <option value="">All Grades</option>
-                        <!-- Dynamic options will be loaded here -->
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">Filter</button>
-                    <button type="button" id="debugBtn" class="btn btn-outline-info btn-sm w-100 mt-1">Debug Info</button>
-                </div>
-            </form>
-            <div class="row mt-2">
-                <div class="col-12">
-                    <small class="text-muted" id="filterStatus">Loading filters...</small>
+    </section>
+
+    <div class="container">
+        <%- include('../partials/flash-messages') %>
+
+        <!-- Page Header -->
+        <div class="page-header text-center mb-5">
+            <h1 class="display-4 text-primary">Quality Timber Products</h1>
+            <p class="lead">Premium lumber and building materials - All prices in Ghana Cedis (₵)</p>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <p class="text-muted">Select your preferred timber type, choose the size that fits your project, and get instant pricing</p>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Products Grid -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Timber Products</h5>
-            <div>
-                <button type="button" id="refreshProducts" class="btn btn-outline-secondary btn-sm me-2">
-                    Refresh
-                </button>
-                <% if (typeof isManager !== 'undefined' && isManager) { %>
-                    <a href="/products/add" class="btn btn-success btn-sm">
-                        Add New Product
-                    </a>
-                <% } %>
+        <!-- Search and Filter Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-search me-2"></i>Find Your Perfect Timber</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="/products" class="row g-3" id="filterForm">
+                    <div class="col-md-4">
+                        <input type="text" name="search" class="form-control" placeholder="Search timber types..." 
+                               value="<%= typeof search !== 'undefined' ? search : '' %>"
+                               id="searchInput">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="category" class="form-control" id="categorySelect">
+                            <option value="">All Categories</option>
+                            <option value="Timber" <%= (typeof category !== 'undefined' && category === 'Timber') ? 'selected' : '' %>>Timber</option>
+                            <option value="Plywood" <%= (typeof category !== 'undefined' && category === 'Plywood') ? 'selected' : '' %>>Plywood</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="grade" class="form-control" id="gradeSelect">
+                            <option value="">All Grades</option>
+                            <option value="A" <%= (typeof grade !== 'undefined' && grade === 'A') ? 'selected' : '' %>>Grade A</option>
+                            <option value="B" <%= (typeof grade !== 'undefined' && grade === 'B') ? 'selected' : '' %>>Grade B</option>
+                            <option value="C" <%= (typeof grade !== 'undefined' && grade === 'C') ? 'selected' : '' %>>Grade C</option>
+                            <option value="Premium" <%= (typeof grade !== 'undefined' && grade === 'Premium') ? 'selected' : '' %>>Premium</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-1"></i>Filter
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-        <div class="card-body">
-            <!-- Loading State -->
-            <div id="loadingState" class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading products...</span>
+
+        <!-- Timber Products Grid -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-boxes me-2"></i>Available Timber Types</h5>
+                <div class="d-flex gap-2">
+                    <button type="button" id="refreshProducts" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
+                    </button>
+                    <% if (typeof isManager !== 'undefined' && isManager) { %>
+                        <a href="/products/add" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus me-1"></i>Add Product
+                        </a>
+                    <% } %>
                 </div>
-                <p class="mt-2">Loading products...</p>
             </div>
+            <div class="card-body">
+                <!-- Loading State -->
+                <div id="loadingState" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading products...</span>
+                    </div>
+                    <p class="mt-2">Loading timber products...</p>
+                </div>
 
-            <!-- Products Content -->
-            <div id="productsContent" style="display: none;">
-                <% if (typeof products !== 'undefined' && products.length > 0) { %>
-                    <div class="products-grid">
-                        <% products.forEach(product => { %>
-                            <div class="product-card">
-                                <div class="card h-100">
-                                    <% if (product.product_image) { %>
-                                        <img src="<%= product.product_image %>" class="card-img-top product-image" alt="<%= product.product_name %>">
-                                    <% } else { %>
-                                        <div class="card-img-top product-image-placeholder d-flex align-items-center justify-content-center">
-                                            <i class="fas fa-box-open fa-3x text-muted"></i>
-                                        </div>
-                                    <% } %>
-                                    <div class="card-body d-flex flex-column">
-                                        <h5 class="product-title card-title"><%= product.product_name %></h5>
-                                        
-                                        <div class="product-specs mb-2">
-                                            <span class="badge bg-primary me-1"><%= product.timber_type %></span>
-                                            <span class="badge bg-secondary"><%= product.product_grade %></span>
-                                        </div>
-
-                                        <div class="product-dimensions mb-2">
-                                            <% if (product.dimensions) { %>
-                                                <div class="small">
-                                                    <strong>Dimensions:</strong> <%= product.dimensions %>
+                <!-- Products Content -->
+                <div id="productsContent" style="display: none;">
+                    <% if (typeof timberTypes !== 'undefined' && timberTypes.length > 0) { %>
+                        <div class="products-grid">
+                            <% timberTypes.forEach(timber => { %>
+                                <div class="product-card" data-timber-type="<%= timber.timber_type %>">
+                                    <div class="card h-100">
+                                        <!-- Product Image -->
+                                        <div class="position-relative">
+                                            <% if (timber.product_image) { %>
+                                                <img src="<%= timber.product_image %>" class="card-img-top product-image" alt="<%= timber.timber_type %>">
+                                            <% } else { %>
+                                                <div class="card-img-top product-image-placeholder d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-tree fa-3x text-muted"></i>
                                                 </div>
                                             <% } %>
-                                            <div class="small">
-                                                <strong>Size:</strong> 
-                                                <%= product.length || 'N/A' %>m × 
-                                                <%= product.width || 'N/A' %>m × 
-                                                <%= product.thickness || 'N/A' %>m
-                                            </div>
+                                            <span class="position-absolute top-0 end-0 badge bg-success m-2">
+                                                <%= timber.variant_count %> Sizes
+                                            </span>
                                         </div>
 
-                                        <p class="product-description card-text flex-grow-1">
-                                            <%= product.product_description || 'No description available' %>
-                                        </p>
-                                        
-                                        <div class="product-pricing mb-3">
-                                            <h4 class="product-price text-success">₵<%= parseFloat(product.price_per_unit || 0).toFixed(2) %> / <%= product.unit || 'unit' %></h4>
-                                            <div class="stock-info">
-                                                <strong>Stock:</strong> 
-                                                <span class="<%= (product.quantity_in_stock || 0) > 0 ? 'text-success' : 'text-danger' %>">
-                                                    <%= parseFloat(product.quantity_in_stock || 0).toFixed(2) %> <%= product.unit || 'unit' %>
+                                        <div class="card-body d-flex flex-column">
+                                            <!-- Timber Type Header -->
+                                            <h5 class="product-title card-title">
+                                                <%= timber.timber_type %>
+                                                <span class="badge bg-secondary float-end">
+                                                    <%= timber.product_category %>
                                                 </span>
-                                            </div>
-                                        </div>
+                                            </h5>
 
-                                        <div class="product-actions mt-auto">
-                                            <div class="btn-group w-100" role="group">
-                                                <button type="button" 
-                                                        class="btn btn-outline-primary btn-sm add-to-cart-btn" 
-                                                        data-product-id="<%= product.product_id %>"
-                                                        <%= (product.quantity_in_stock || 0) <= 0 ? 'disabled' : '' %>>
-                                                    <i class="fas fa-cart-plus me-1"></i>
-                                                    <%= (product.quantity_in_stock || 0) <= 0 ? 'Out of Stock' : 'Add to Cart' %>
-                                                </button>
-                                                <% if (typeof isManager !== 'undefined' && isManager) { %>
-                                                    <a href="/products/edit/<%= product.product_id %>" 
-                                                       class="btn btn-outline-secondary btn-sm">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                <% } %>
+                                            <!-- Size Selection -->
+                                            <div class="size-selection mb-3">
+                                                <label class="form-label small fw-bold mb-1">Select Size:</label>
+                                                <select class="form-select form-select-sm size-selector" 
+                                                        data-timber-type="<%= timber.timber_type %>">
+                                                    <option value="">Choose a size...</option>
+                                                    <!-- Size options will be loaded dynamically -->
+                                                </select>
+                                                <div class="size-details mt-1 small text-muted" 
+                                                     id="sizeDetails-<%= timber.timber_type %>" 
+                                                     style="display: none;">
+                                                    <!-- Size details will be shown here -->
+                                                </div>
+                                            </div>
+
+                                            <!-- Quantity Selection -->
+                                            <div class="quantity-selection mb-3" style="display: none;">
+                                                <label class="form-label small fw-bold mb-1">Quantity:</label>
+                                                <div class="input-group input-group-sm">
+                                                    <button class="btn btn-outline-secondary quantity-minus" type="button">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                    <input type="number" class="form-control quantity-input text-center" 
+                                                           value="1" min="1" max="1000" 
+                                                           data-timber-type="<%= timber.timber_type %>">
+                                                    <button class="btn btn-outline-secondary quantity-plus" type="button">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Dynamic Pricing -->
+                                            <div class="pricing-section mb-3" style="display: none;">
+                                                <div class="price-breakdown bg-light p-2 rounded">
+                                                    <div class="unit-price small mb-1">
+                                                        Unit Price: <span class="unit-price-value fw-bold text-primary">₵0.00</span>
+                                                    </div>
+                                                    <div class="total-price">
+                                                        <strong>Total: <span class="total-price-value text-success">₵0.00</span></strong>
+                                                    </div>
+                                                </div>
+                                                <div class="stock-info small text-muted mt-1">
+                                                    Stock: <span class="stock-amount">0</span> available
+                                                </div>
+                                            </div>
+
+                                            <!-- Product Description -->
+                                            <div class="product-description mb-3">
+                                                <p class="card-text small text-muted description-text" style="min-height: 40px;">
+                                                    <!-- Description will be loaded dynamically -->
+                                                </p>
+                                            </div>
+
+                                            <!-- Action Buttons -->
+                                            <div class="product-actions mt-auto">
+                                                <div class="btn-group w-100" role="group">
+                                                    <button type="button" 
+                                                            class="btn btn-outline-primary btn-sm add-to-cart-btn"
+                                                            data-timber-type="<%= timber.timber_type %>"
+                                                            disabled>
+                                                        <i class="fas fa-cart-plus me-1"></i>
+                                                        Add to Cart
+                                                    </button>
+                                                    <button type="button" 
+                                                            class="btn btn-outline-info btn-sm view-details-btn"
+                                                            data-timber-type="<%= timber.timber_type %>">
+                                                        <i class="fas fa-info-circle"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            <% }); %>
+                        </div>
+
+                        <!-- Pagination -->
+                        <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+                            <div class="pagination-container">
+                                <ul class="pagination justify-content-center">
+                                    <!-- Previous Page -->
+                                    <% if (currentPage > 1) { %>
+                                        <li class="page-item previous">
+                                            <a class="page-link" 
+                                               href="/products?page=<%= currentPage - 1 %>&search=<%= search || '' %>&category=<%= category || '' %>&grade=<%= grade || '' %>">
+                                                Previous
+                                            </a>
+                                        </li>
+                                    <% } %>
+
+                                    <!-- Page Numbers -->
+                                    <% for (let i = 1; i <= totalPages; i++) { %>
+                                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                            <a class="page-link" 
+                                               href="/products?page=<%= i %>&search=<%= search || '' %>&category=<%= category || '' %>&grade=<%= grade || '' %>">
+                                                <%= i %>
+                                            </a>
+                                        </li>
+                                    <% } %>
+
+                                    <!-- Next Page -->
+                                    <% if (currentPage < totalPages) { %>
+                                        <li class="page-item next">
+                                            <a class="page-link" 
+                                               href="/products?page=<%= currentPage + 1 %>&search=<%= search || '' %>&category=<%= category || '' %>&grade=<%= grade || '' %>">
+                                                Next
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                </ul>
                             </div>
-                        <% }); %>
-                    </div>
+                        <% } %>
 
-                    <!-- Pagination -->
-                    <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
-                        <nav class="products-pagination mt-4">
-                            <ul class="pagination justify-content-center">
-                                <!-- Previous Page -->
-                                <% if (currentPage > 1) { %>
-                                    <li class="page-item">
-                                        <a class="page-link" 
-                                           href="/products?page=<%= currentPage - 1 %>&search=<%= search || '' %>&timber_type=<%= timber_type || '' %>&grade=<%= grade || '' %>">
-                                            Previous
-                                        </a>
-                                    </li>
+                    <% } else { %>
+                        <div class="empty-products text-center py-5">
+                            <div class="empty-icon">🌲</div>
+                            <h4 class="mt-3">No Timber Products Found</h4>
+                            <p class="empty-message text-muted">No timber products match your search criteria.</p>
+                            <div class="mt-3">
+                                <button type="button" id="clearFilters" class="btn btn-outline-secondary me-2">
+                                    <i class="fas fa-times me-1"></i>Clear Filters
+                                </button>
+                                <% if (typeof isManager !== 'undefined' && isManager) { %>
+                                    <a href="/products/add" class="btn btn-primary">
+                                        <i class="fas fa-plus me-1"></i>Add New Product
+                                    </a>
                                 <% } %>
-
-                                <!-- Page Numbers -->
-                                <% for (let i = 1; i <= totalPages; i++) { %>
-                                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                                        <a class="page-link" 
-                                           href="/products?page=<%= i %>&search=<%= search || '' %>&timber_type=<%= timber_type || '' %>&grade=<%= grade || '' %>">
-                                            <%= i %>
-                                        </a>
-                                    </li>
-                                <% } %>
-
-                                <!-- Next Page -->
-                                <% if (currentPage < totalPages) { %>
-                                    <li class="page-item">
-                                        <a class="page-link" 
-                                           href="/products?page=<%= currentPage + 1 %>&search=<%= search || '' %>&timber_type=<%= timber_type || '' %>&grade=<%= grade || '' %>">
-                                            Next
-                                        </a>
-                                    </li>
-                                <% } %>
-                            </ul>
-                        </nav>
+                            </div>
+                        </div>
                     <% } %>
-
-                <% } else { %>
-                    <div class="empty-products text-center py-5">
-                        <div class="empty-icon" style="font-size: 4rem;">📦</div>
-                        <h4 class="mt-3">No Products Found</h4>
-                        <p class="empty-message text-muted">No timber products match your search criteria.</p>
-                        <div class="mt-3">
-                            <button type="button" id="clearFilters" class="btn btn-outline-secondary me-2">
-                                Clear Filters
-                            </button>
-                            <% if (typeof isManager !== 'undefined' && isManager) { %>
-                                <a href="/products/add" class="btn btn-primary">
-                                    <i class="fas fa-plus me-1"></i>Add Your First Product
-                                </a>
-                            <% } %>
-                        </div>
-                    </div>
-                <% } %>
+                </div>
             </div>
         </div>
+
+        <!-- Summary Stats -->
+        <% if (typeof timberTypes !== 'undefined' && timberTypes.length > 0) { %>
+            <div class="products-stats mt-4">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stat-card text-center p-3 border rounded">
+                            <div class="stat-number display-6 text-primary">
+                                <%= typeof totalProducts !== 'undefined' ? totalProducts : timberTypes.length %>
+                            </div>
+                            <div class="stat-label text-muted">Timber Types</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center p-3 border rounded">
+                            <div class="stat-number display-6 text-success">
+                                <%
+                                let totalSizes = 0;
+                                if (typeof timberTypes !== 'undefined') {
+                                    timberTypes.forEach(t => totalSizes += parseInt(t.variant_count));
+                                }
+                                %>
+                                <%= totalSizes %>
+                            </div>
+                            <div class="stat-label text-muted">Available Sizes</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center p-3 border rounded">
+                            <div class="stat-number display-6 text-info">
+                                <%
+                                let uniqueCategories = [];
+                                if (typeof timberTypes !== 'undefined') {
+                                    timberTypes.forEach(t => {
+                                        if (!uniqueCategories.includes(t.product_category)) {
+                                            uniqueCategories.push(t.product_category);
+                                        }
+                                    });
+                                }
+                                %>
+                                <%= uniqueCategories.length %>
+                            </div>
+                            <div class="stat-label text-muted">Product Categories</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center p-3 border rounded">
+                            <div class="stat-number display-6 text-warning">
+                                <%
+                                let totalStock = 0;
+                                if (typeof timberTypes !== 'undefined') {
+                                    totalStock = timberTypes.length * 50; // Placeholder
+                                }
+                                %>
+                                <%= totalStock %>
+                            </div>
+                            <div class="stat-label text-muted">Total in Stock</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% } %>
     </div>
-
-    <!-- Summary Stats -->
-    <% if (typeof products !== 'undefined' && products.length > 0) { %>
-        <div class="products-stats mt-4">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="stat-card text-center p-3 border rounded">
-                        <div class="stat-number display-6 text-primary"><%= typeof totalProducts !== 'undefined' ? totalProducts : products.length %></div>
-                        <div class="stat-label text-muted">Total Products</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-card text-center p-3 border rounded">
-                        <div class="stat-number display-6 text-success">
-                            <% 
-                            let uniqueTypes = [];
-                            products.forEach(p => {
-                                if (!uniqueTypes.includes(p.timber_type)) uniqueTypes.push(p.timber_type);
-                            });
-                            %>
-                            <%= uniqueTypes.length %>
-                        </div>
-                        <div class="stat-label text-muted">Timber Types</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-card text-center p-3 border rounded">
-                        <div class="stat-number display-6 text-info">
-                            ₵<%
-                            let totalValue = 0;
-                            products.forEach(product => {
-                                totalValue += (product.price_per_unit || 0) * (product.quantity_in_stock || 0);
-                            });
-                            %>
-                            <%= totalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %>
-                        </div>
-                        <div class="stat-label text-muted">Inventory Value</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    <% } %>
 </div>
 
-<style>
-.products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-.product-card .card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    border: 1px solid #e9ecef;
-}
-
-.product-card .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.product-image {
-    height: 200px;
-    object-fit: cover;
-}
-
-.product-image-placeholder {
-    height: 200px;
-    background-color: #f8f9fa;
-    color: #6c757d;
-}
-
-.product-title {
-    color: #2c3e50;
-    font-weight: 600;
-}
-
-.product-specs .badge {
-    font-size: 0.75em;
-}
-
-.product-price {
-    font-weight: 700;
-}
-
-.stock-info {
-    font-size: 0.9em;
-}
-
-.products-stats .stat-card {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
-
-.products-pagination .page-item.active .page-link {
-    background-color: #007bff;
-    border-color: #007bff;
-}
-
-.empty-products {
-    padding: 3rem 1rem;
-}
-
-.empty-icon {
-    opacity: 0.7;
-}
-
-@media (max-width: 768px) {
-    .products-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .page-header h1 {
-        font-size: 1.8rem;
-    }
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the page
-    initializePage();
-    
-    // Event listeners
-    document.getElementById('debugBtn').addEventListener('click', showDebugInfo);
-    document.getElementById('refreshProducts').addEventListener('click', refreshProducts);
-    if (document.getElementById('clearFilters')) {
-        document.getElementById('clearFilters').addEventListener('click', clearFilters);
-    }
-    
-    // Add to cart functionality
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('add-to-cart-btn') && !e.target.disabled) {
-            const productId = e.target.getAttribute('data-product-id');
-            addToCart(productId);
-        }
-    });
-});
-
-async function initializePage() {
-    // Show loading state
-    showLoadingState();
-    
-    try {
-        // Load filter options
-        await loadFilterOptions();
-        
-        // Hide loading state and show content
-        hideLoadingState();
-        
-        // Update filter status
-        document.getElementById('filterStatus').textContent = 'Filters loaded successfully';
-        document.getElementById('filterStatus').className = 'text-success';
-        
-    } catch (error) {
-        console.error('Initialization error:', error);
-        document.getElementById('filterStatus').textContent = 'Error loading filters';
-        document.getElementById('filterStatus').className = 'text-danger';
-        hideLoadingState();
-    }
-}
-
-function showLoadingState() {
-    document.getElementById('loadingState').style.display = 'block';
-    document.getElementById('productsContent').style.display = 'none';
-}
-
-function hideLoadingState() {
-    document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('productsContent').style.display = 'block';
-}
-
-async function loadFilterOptions() {
-    try {
-        console.log('Loading filter options...');
-        
-        // Load timber types from API
-        const timberResponse = await fetch('/products/api/timber-types');
-        if (!timberResponse.ok) throw new Error('Timber types API failed');
-        const timberData = await timberResponse.json();
-        console.log('Timber types data:', timberData);
-        
-        const timberSelect = document.getElementById('timber_type_select');
-        timberSelect.innerHTML = '<option value="">All Timber Types</option>';
-        
-        if (timberData.timberTypes && timberData.timberTypes.length > 0) {
-            timberData.timberTypes.forEach(timberType => {
-                const option = new Option(timberType, timberType);
-                const urlParams = new URLSearchParams(window.location.search);
-                const selectedTimber = urlParams.get('timber_type');
-                if (selectedTimber === timberType) {
-                    option.selected = true;
-                }
-                timberSelect.add(option);
-            });
-        } else {
-            // Fallback to static options if API fails
-            const staticTimberTypes = ['Teak', 'Oak', 'Pine', 'Mahogany', 'Cedar'];
-            staticTimberTypes.forEach(timberType => {
-                const option = new Option(timberType, timberType);
-                timberSelect.add(option);
-            });
-            console.warn('Using static timber types - API returned no data');
-        }
-
-        // Load grades from API
-        const gradeResponse = await fetch('/products/api/grades');
-        if (!gradeResponse.ok) throw new Error('Grades API failed');
-        const gradeData = await gradeResponse.json();
-        console.log('Grades data:', gradeData);
-        
-        const gradeSelect = document.getElementById('grade_select');
-        gradeSelect.innerHTML = '<option value="">All Grades</option>';
-        
-        if (gradeData.grades && gradeData.grades.length > 0) {
-            gradeData.grades.forEach(grade => {
-                const option = new Option(grade, grade);
-                const urlParams = new URLSearchParams(window.location.search);
-                const selectedGrade = urlParams.get('grade');
-                if (selectedGrade === grade) {
-                    option.selected = true;
-                }
-                gradeSelect.add(option);
-            });
-        } else {
-            // Fallback to static options if API fails
-            const staticGrades = ['A', 'B', 'C'];
-            staticGrades.forEach(grade => {
-                const option = new Option(grade, grade);
-                gradeSelect.add(option);
-            });
-            console.warn('Using static grades - API returned no data');
-        }
-        
-    } catch (error) {
-        console.error('Error loading filter options:', error);
-        loadStaticFilters();
-        throw error;
-    }
-}
-
-function loadStaticFilters() {
-    const staticTimberTypes = ['Teak', 'Oak', 'Pine', 'Mahogany', 'Cedar'];
-    const staticGrades = ['A', 'B', 'C'];
-    
-    const timberSelect = document.getElementById('timber_type_select');
-    const gradeSelect = document.getElementById('grade_select');
-    
-    timberSelect.innerHTML = '<option value="">All Timber Types</option>';
-    gradeSelect.innerHTML = '<option value="">All Grades</option>';
-    
-    staticTimberTypes.forEach(timberType => {
-        const option = new Option(timberType, timberType);
-        timberSelect.add(option);
-    });
-    
-    staticGrades.forEach(grade => {
-        const option = new Option(grade, grade);
-        gradeSelect.add(option);
-    });
-}
-
-async function showDebugInfo() {
-    try {
-        // Test the products debug endpoint
-        const response = await fetch('/products/debug/products');
-        const data = await response.json();
-        
-        const debugContent = document.getElementById('debugContent');
-        const debugInfo = document.getElementById('debugInfo');
-        
-        debugContent.innerHTML = `
-            <div class="row">
-                <div class="col-md-6">
-                    <strong>API Status:</strong> ${data.success ? '✅ Success' : '❌ Failed'}<br>
-                    <strong>Products Found:</strong> ${data.count || 0}<br>
-                    <strong>Current Display:</strong> ${typeof products !== 'undefined' ? products.length : 0} products<br>
-                    <strong>Total Pages:</strong> ${typeof totalPages !== 'undefined' ? totalPages : 1}<br>
-                    <strong>Current Page:</strong> ${typeof currentPage !== 'undefined' ? currentPage : 1}
-                </div>
-                <div class="col-md-6">
-                    <strong>URL Parameters:</strong><br>
-                    <code>${window.location.search || 'None'}</code><br><br>
-                    <strong>Database Columns:</strong><br>
-                    <small>${data.columns ? data.columns.join(', ') : 'No columns found'}</small>
-                </div>
-            </div>
-            ${data.data ? `
-            <div class="mt-3">
-                <strong>Sample Data (first 3 items):</strong>
-                <pre class="bg-light p-2 mt-1 small">${JSON.stringify(data.data.slice(0, 3), null, 2)}</pre>
-            </div>
-            ` : ''}
-        `;
-        
-        debugInfo.classList.remove('d-none');
-        
-    } catch (error) {
-        console.error('Debug error:', error);
-        const debugContent = document.getElementById('debugContent');
-        const debugInfo = document.getElementById('debugInfo');
-        
-        debugContent.innerHTML = `<strong>Debug Error:</strong> ${error.message}`;
-        debugInfo.classList.remove('d-none');
-    }
-}
-
-function refreshProducts() {
-    window.location.reload();
-}
-
-function clearFilters() {
-    window.location.href = '/products';
-}
-
-async function addToCart(productId) {
-    try {
-        const response = await fetch('/cart/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                product_id: productId,
-                quantity: 1
-            })
-        });
-        
-        const data = await response.json();
-        if (data.success) {
-            showToast('Product added to cart successfully!', 'success');
-        } else {
-            showToast('Error adding product to cart: ' + data.message, 'error');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        showToast('Error adding product to cart', 'error');
-    }
-}
-
-function showToast(message, type = 'info') {
-    // Create toast element
-    const toast = document.createElement('div');
-    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0`;
-    toast.setAttribute('role', 'alert');
-    toast.setAttribute('aria-live', 'assertive');
-    toast.setAttribute('aria-atomic', 'true');
-    
-    toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">
-                ${message}
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-    `;
-    
-    // Add to container
-    const toastContainer = document.getElementById('toastContainer') || createToastContainer();
-    toastContainer.appendChild(toast);
-    
-    // Initialize and show toast
-    const bsToast = new bootstrap.Toast(toast);
-    bsToast.show();
-    
-    // Remove toast after hide
-    toast.addEventListener('hidden.bs.toast', () => {
-        toast.remove();
-    });
-}
-
-function createToastContainer() {
-    const container = document.createElement('div');
-    container.id = 'toastContainer';
-    container.className = 'toast-container position-fixed top-0 end-0 p-3';
-    container.style.zIndex = '9999';
-    document.body.appendChild(container);
-    return container;
-}
-</script>
-
-<!-- Bootstrap Icons -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-<!-- Bootstrap Toast JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Your custom script -->
+<script src="/scripts/productmanagement.js?v=3"></script>
